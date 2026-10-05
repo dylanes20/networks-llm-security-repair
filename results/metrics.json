@@ -1,0 +1,9 @@
+{
+  "api_requests_recorded": 4,
+  "api_failures": 4,
+  "evaluated_repairs": 0,
+  "positive_claims_in_evaluated_repairs": 0,
+  "VRR": null,
+  "FAR": null,
+  "note": "API failures and pending evaluations are documented but excluded from repair metrics."
+}
