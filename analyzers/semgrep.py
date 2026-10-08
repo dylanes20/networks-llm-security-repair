@@ -15,7 +15,7 @@ class SemgrepAnalyzer:
 
         command = [
             "semgrep", "--config=auto", "--json",
-            "--metrics=off",
+            "--metrics=auto",
             "--exclude=.venv",
             "--exclude=venv",
             "--exclude=backported_tests",

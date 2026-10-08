@@ -25,7 +25,7 @@ class Vul4PyAdapter:
 
     def vulnerable_dir(self, case_id: str) -> Path:
         if case_id not in self.valid_cases():
-            raise ValueError("El caso no pasó la validación")
+            raise ValueError("The case did not pass validation")
         return self.workspaces / case_id / "vulnerable"
 
     def apply_patch(self, case_id: str, patch: str) -> EvaluationResult:
@@ -36,7 +36,7 @@ class Vul4PyAdapter:
 
         if patch_path.exists():
             if patch_path.read_text(encoding="utf-8") != patch:
-                raise ValueError("El parche congelado no puede cambiar")
+                raise ValueError("The frozen patch cannot be changed")
         else:
             with patch_path.open("x", encoding="utf-8") as f:
                 f.write(patch)
@@ -59,7 +59,7 @@ class Vul4PyAdapter:
                 encoding="utf-8",
             )
             if result.returncode != 0 or not eval_path.exists():
-                raise RuntimeError("Falló el evaluador: revisar evaluator.log")
+                raise RuntimeError("Evaluator failed: check evaluator.log")
 
         candidate = self.workspaces / case_id / "student_analysis_candidate"
         return self.evaluate(case_id, candidate)
@@ -93,7 +93,7 @@ class Vul4PyAdapter:
                     encoding="utf-8",
                 )
                 if result.returncode != 0:
-                    raise RuntimeError("No se pudo reconstruir la copia")
+                    raise RuntimeError("Could not reconstruct the candidate")
             candidate = candidate_dir
 
         return EvaluationResult(

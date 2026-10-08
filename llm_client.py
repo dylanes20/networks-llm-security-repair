@@ -43,21 +43,21 @@ def repair(vulnerable_source: str) -> LLMResult:
 
     try:
         if response.status != "completed":
-            raise ValueError("Respuesta incompleta")
+            raise ValueError("Incomplete response")
 
         data = json.loads(raw)
 
         if type(data["claimed_success"]) is not bool:
-            raise ValueError("claimed_success debe ser booleano")
+            raise ValueError("claimed_success must be a boolean")
 
         confidence = data["confidence"]
         if type(confidence) not in (int, float):
-            raise ValueError("confidence debe ser un número")
+            raise ValueError("confidence must be a number")
         if not 0 <= confidence <= 1:
-            raise ValueError("confidence debe estar entre 0 y 1")
+            raise ValueError("confidence must be between 0 and 1")
 
         if not isinstance(data["patch"], str):
-            raise ValueError("patch debe ser texto")
+            raise ValueError("patch must be a string")
 
     except (ValueError, KeyError, TypeError) as error:
         error.raw_response = raw

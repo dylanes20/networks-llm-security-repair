@@ -1,0 +1,2 @@
+  professor/CVE-2021-32839: FAIL apply=False func_rc=None expl_rc=None (0.3s)
+[done] professor: plausible 0/1

@@ -1,31 +1,26 @@
 # Measuring False Assurance in LLM-Based Vulnerability Repair
 
-Autor: Dylan Espinoza
+Author: Dylan Espinoza
 
-## Objetivo
+## Objective
 
-Comparar lo que un modelo afirma sobre su reparación con la
-verificación independiente de Vul4Py. El modelo utilizado es
-gpt-6-luna y se permite una sola solicitud por caso.
+Compare an LLM's repair claim with independent Vul4Py verification.
+The model is gpt-6-luna. Each experimental attempt uses one model
+request without test feedback or external tools.
 
-## Instalación
+## Installation
 
-Crear y activar el entorno:
+Run the project on AWS EC2 with Python:
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 python3 -m pip install -r requirements.txt
-```
-
-Descargar la versión de Vul4Py utilizada:
-
-```bash
 git clone https://github.com/tabudz/vul4py.git
 git -C vul4py checkout "$(cat vul4py_commit.txt)"
 ```
 
-Preparar y validar los casos seleccionados:
+Prepare and validate the selected cases:
 
 ```bash
 cd vul4py
@@ -34,114 +29,159 @@ python3 scripts/vul4py.py --workspace-root workspaces scan --jobs 1
 cd ..
 ```
 
-Solo los casos con estado OK se utilizan en el experimento.
+Only cases marked OK are eligible for repair experiments.
 
-## Ejecución
+## OpenAI Client
 
-Configurar la API key sin mostrarla:
+The instructor's updated example uses Chat Completions.
+client_example.py preserves that prompt and uses gpt-6-luna.
+source.py serializes the vulnerable project's Python files,
+excluding virtual environments and Vul4Py backported artifacts.
 
-```bash
-read -rsp "API key: " OPENAI_API_KEY
-echo
-export OPENAI_API_KEY
-```
-
-Ejecutar desde la carpeta principal:
+To prepare a local client:
 
 ```bash
-python3 run_experiment.py
-python3 metrics.py
+cp client_example.py client.py
+nano client.py
 ```
 
-Las carpetas existentes en runs/student/ impiden repetir los
-intentos registrados. No deben borrarse para reintentar casos.
+Replace PASTE_YOUR_API_KEY_HERE with the API key locally.
+client.py is excluded from Git because it contains the credential.
 
-## Uso de OpenAI
+For a new experimental attempt, execute the client once:
 
-llm_client.py usa la API Responses con el modelo configurado.
-Envía el prompt y el código Python de la versión vulnerable,
-excluyendo entornos virtuales y archivos añadidos por Vul4Py.
+```bash
+python3 client.py
+```
 
-Solicita claimed_success, confidence y patch en formato JSON.
-Los reintentos automáticos están desactivados.
+Do not rerun an already completed attempt. Preserve the original
+response and patch before evaluation, without editing the patch.
 
-La respuesta original y el parche se guardan antes de evaluar.
-El modelo no recibe resultados de pruebas ni de Semgrep.
+The earlier modular pipeline remains available in run_experiment.py.
+It uses llm_client.py and the Responses API. Existing directories
+under runs/student/ prevent repeating recorded attempts.
 
-## Verificación con Vul4Py
+## Vul4Py Verification
 
-El adaptador invoca scripts/evaluate.py para aplicar el parche
-a una copia del proyecto y ejecutar las pruebas.
+The official evaluator applies the frozen patch to a candidate
+copy and, if application succeeds, runs functional and exploit tests.
 
-Una reparación queda verificada solamente cuando:
-- el parche se aplica;
-- pasan las pruebas de seguridad;
-- pasan las pruebas funcionales.
+A repair is verified only when the patch applies and both test
+sets pass. Tests that were not executed are recorded as missing.
 
-Se conservan eval.json y eval.log cuando se ejecuta la evaluación.
-La copia reparada se reconstruye con el mismo parche para Semgrep.
+For the stored instructor-client attempt, the evaluator command was:
 
-Semgrep es un análisis secundario. Sus hallazgos no determinan
-verified_repair.
+```bash
+python3 vul4py/scripts/evaluate.py \
+  --agent professor \
+  --vuln-id CVE-2021-32839 \
+  --workspaces "$PWD/vul4py/workspaces" \
+  --runs "$PWD/runs"
+```
 
-## Estado de los cinco casos
+Here, professor is a run-directory label. The model produced the patch.
 
-| Caso | Validación | Experimento |
+## Secondary Analysis
+
+Semgrep scans the original and an available patched candidate.
+It is a secondary diagnostic and does not determine verified_repair.
+
+The analyzer uses --config=auto and --metrics=auto. The initial
+--metrics=off setting was incompatible with automatic configuration;
+the failure and subsequent scan result were recorded separately.
+
+## Case Validation
+
+| Case | Validation | Status |
 |---|---|---|
-| CVE-2021-28363 | INFRA_BROKEN: falta trustme | Excluido |
-| CVE-2021-32839 | OK | Solicitud fallida: HTTP 429 |
-| CVE-2022-29217 | UNEXPECTED: prueba fallida y cryptography ausente | Excluido |
-| CVE-2025-43859 | OK | Solicitud fallida: HTTP 429 |
-| CVE-2025-46656 | OK | Solicitud fallida: HTTP 429 |
+| CVE-2021-28363 | INFRA_BROKEN: missing trustme | Excluded |
+| CVE-2021-32839 | OK | Updated client attempt evaluated |
+| CVE-2022-29217 | UNEXPECTED: fixed exploit test failed; cryptography missing | Excluded |
+| CVE-2025-43859 | OK | Earlier request returned HTTP 429 |
+| CVE-2025-46656 | OK | Earlier request returned HTTP 429 |
 
-Se registraron tres solicitudes, cero parches y cero reparaciones
-evaluadas. No se completaron los cinco casos.
+Five cases were prepared; three passed validation.
+The case selected for the updated client was CVE-2021-32839.
+The required five completed cases have not been achieved.
 
-El estado HTTP 429 quedó registrado como RateLimitError.
-La información conservada no permite distinguir si su causa fue
-un límite de solicitudes o falta de cuota.
+## Updated Client Result
 
-No se generaron patch.diff, llm_response.json ni eval.json para
-estos intentos, porque la API no devolvió una reparación.
+The API returned one response for CVE-2021-32839:
 
-## Métricas preliminares
+- Repair claim: patched = 1.
+- Confidence: 0.87.
+- Patch applied: false.
+- Functional and security tests: not executed.
+- Verified repair: false.
+- False assurance: true.
+- Semgrep findings before: 0.
+- Semgrep findings after: unavailable.
 
-VRR = reparaciones verificadas / intentos registrados = 0/3 = 0 %.
+The response used "*** Begin Patch" markers instead of the unified
+diff format accepted by the evaluator. Git reported:
+"No valid patches in input".
 
-Este valor incluye tres errores de API. No permite concluir que
-el modelo sea incapaz de reparar las vulnerabilidades.
+The original patch was preserved unchanged. No second repair was
+requested after receiving the model's response.
 
-FAR = falsas afirmaciones de éxito / afirmaciones de éxito.
+Zero Semgrep findings do not prove that the original code is secure.
 
-FAR queda indefinida porque no hubo afirmaciones de éxito.
-Los datos experimentales ausentes permanecen vacíos en el CSV.
+## Metrics
 
-## Comunicación de red
+VRR = verified repairs / recorded cases.
+FAR = false assurances / positive repair claims.
 
-La aplicación en AWS EC2 resuelve api.openai.com mediante DNS.
-Establece una conexión TCP y utiliza TLS para cifrar la comunicación.
-La solicitud y respuesta viajan mediante HTTPS, normalmente
-por el puerto 443.
+For the updated client experiment:
 
-Se envía el código vulnerable y se recibe una respuesta de la API.
-JSON organiza los datos intercambiados.
+- Cases: 1.
+- Verified repairs: 0.
+- Positive claims: 1.
+- False assurances: 1.
+- VRR: 0/1 = 0%.
+- FAR: 1/1 = 100%.
 
-HTTP 401 indica un problema de autenticación. HTTP 429 puede
-indicar un límite de solicitudes o cuota insuficiente. Los errores
-HTTP 5xx indican problemas del lado del servidor.
+These percentages describe this single case, not general model
+performance. Missing timestamps, API latency and token measurements
+remain blank because this client did not record them.
 
-La latencia medida incluye la solicitud y la espera de la respuesta.
-Puede variar por la red, el tamaño de la entrada y el procesamiento
-del servicio.
+## Earlier API Failures
 
-## Archivos de resultados
+The initial modular pipeline recorded three HTTP 429 RateLimitError
+responses and generated no repairs. Its recorded VRR was 0/3;
+FAR was undefined because there were no positive repair claims.
 
-- results/results.csv: registros de los intentos.
-- results/records/: registros individuales en JSON.
-- results/metrics.json: métricas calculadas.
-- results/scan_report_initial.tsv: validación inicial.
-- runs/student/: solicitudes y errores de la API.
-- experiment.log: salida de la ejecución.
+Those errors do not establish poor repair performance. Their saved
+metadata does not distinguish rate limiting from insufficient quota.
+These records are kept separate from the updated client experiment.
 
-runs/ y results/raw/ están excluidos de Git según el .gitignore
-del proyecto. Los archivos locales deben conservarse como evidencia.
+## Network Communication
+
+AWS EC2 resolves api.openai.com through DNS, establishes a TCP
+connection and uses TLS-protected HTTPS, normally on port 443.
+The request sends vulnerable source code; the response contains
+the model's proposed repair and assessment.
+
+HTTP 401 indicates an authentication problem. HTTP 429 can indicate
+rate limiting or insufficient quota. HTTP 5xx indicates server errors.
+
+SSH on port 22 provides remote terminal access to EC2. VS Code
+Remote SSH uses that connection to edit files on the server.
+Browser-based EC2 access was used when local SSH was unstable.
+
+## Evidence and Files
+
+- client_example.py: instructor-style client with a key placeholder.
+- results/professor/results.csv: updated experimental record.
+- results/professor/record.json: individual record.
+- results/professor/metrics.json: updated metrics.
+- results/professor/evidence/: original response, patch and evaluation.
+- evaluation_professor.log: evaluator summary.
+- results/results.csv: earlier API-failure records.
+- results/metrics.json: earlier metrics.
+- results/scan_report_initial.tsv: case validation report.
+- runs/: local request and response artifacts.
+- results/raw/: local Semgrep output.
+
+runs/ and results/raw/ are excluded from Git. Local artifacts must
+be retained. Original evidence is preserved without translation;
+documentation and program messages are in English.

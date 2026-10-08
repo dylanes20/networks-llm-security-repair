@@ -18,7 +18,7 @@ from result_writer import save_result_row
 
 def main():
     if MAX_ATTEMPTS_PER_CASE != 1:
-        raise ValueError("El experimento exige un intento por caso")
+        raise ValueError("The experiment requires one attempt per case")
 
     benchmark: BenchmarkAdapter = Vul4PyAdapter(BENCHMARK_ROOT)
     analyzer: Analyzer = SemgrepAnalyzer()
@@ -35,7 +35,7 @@ def main():
         try:
             run_dir.mkdir()
         except FileExistsError:
-            print(case_id, "ya registrado: no se repetirá")
+            print(case_id, "already recorded: skipping")
             continue
 
         row = {
@@ -134,7 +134,7 @@ def main():
             print(case_id, "ERROR:", type(error).__name__)
 
         save_result_row(row)
-        print(case_id, "registro guardado")
+        print(case_id, "record saved")
 
 
 if __name__ == "__main__":

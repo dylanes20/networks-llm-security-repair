@@ -39,7 +39,7 @@ def main():
         encoding="utf-8",
     )
 
-    print("Casos registrados:", metrics["total_cases"])
+    print("Recorded cases:", metrics["total_cases"])
 
     if metrics["VRR"] is None:
         print("VRR: undefined (no cases)")

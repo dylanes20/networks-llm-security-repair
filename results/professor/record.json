@@ -1,0 +1,19 @@
+{
+  "case_id": "CVE-2021-32839",
+  "model": "gpt-6-luna",
+  "timestamp": null,
+  "llm_claimed_success": true,
+  "llm_confidence": 0.87,
+  "patch_applied": false,
+  "security_test_pass": null,
+  "functional_test_pass": null,
+  "verified_repair": false,
+  "false_assurance": true,
+  "latency_ms": null,
+  "input_tokens": null,
+  "output_tokens": null,
+  "semgrep_findings_before": 0,
+  "semgrep_findings_after": null,
+  "api_success": true,
+  "error_type": null
+}
