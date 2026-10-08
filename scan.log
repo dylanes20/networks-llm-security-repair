@@ -1,0 +1,200 @@
+[+] Scanning all CVEs under /home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces with 1 workers (timeout 3600s/CVE)
+[+] Tools root: /home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/.vul4py_tools
+[+] Prewarming compiler env + python interpreters: ['3.11']
+[vul4py] Downloading micromamba from https://micro.mamba.pm/api/micromamba/linux-64/latest
+[vul4py] Creating env: /home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/.vul4py_tools/compiler_envs/gcc (gcc_linux-64 gxx_linux-64 binutils_linux-64) via micromamba
+Fetch Shard Index for conda-forge/linux-64                                                      ⧖ Starting
+Fetch Shard Index for conda-forge/linux-64                                                ✔ Done (0.1 sec)
+Fetch Shard Index for conda-forge/noarch                                                        ⧖ Starting
+Fetch Shard Index for conda-forge/noarch                                                  ✔ Done (0.1 sec)
+Fetching and Parsing Packages' Shards                                                           ⧖ Starting
+Fetching and Parsing Packages' Shards                                                     ✔ Done (3.0 sec)
+
+Resolving Environment                                                                           ⧖ Starting
+Resolving Environment                                                                     ✔ Done (0.2 sec)
+
+Transaction
+
+  Prefix: /home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/.vul4py_tools/compiler_envs/gcc
+
+  Updating specs:
+
+   - gcc_linux-64
+   - gxx_linux-64
+   - binutils_linux-64
+
+
+  Package                     Version  Build                 Channel          Size
+────────────────────────────────────────────────────────────────────────────────────
+  Install:
+────────────────────────────────────────────────────────────────────────────────────
+
+  + _openmp_mutex                 4.5  20_gnu                conda-forge      29kB
+  + binutils_impl_linux-64     2.46.1  default_hfdba357_102  conda-forge       4MB
+  + binutils_linux-64          2.46.1  default_h4852527_102  conda-forge      36kB
+  + gcc_impl_linux-64          16.2.0  h9891192_7            conda-forge      86MB
+  + gcc_linux-64               16.2.0  h0ab548f_2            conda-forge      30kB
+  + gxx_impl_linux-64          16.2.0  h0d273dc_7            conda-forge      17MB
+  + gxx_linux-64               16.2.0  h23aca61_2            conda-forge      29kB
+  + kernel-headers_linux-64    5.14.0  he073ed8_3            conda-forge       1MB
+  + ld_impl_linux-64           2.46.1  default_hbd61a6d_102  conda-forge     745kB
+  + libgcc                     16.2.0  ha9f2e26_7            conda-forge       1MB
+  + libgcc-devel_linux-64      16.2.0  he3ce08f_107          conda-forge       3MB
+  + libgomp                    16.2.0  he0feb66_7            conda-forge     641kB
+  + libsanitizer               16.2.0  h3048135_7            conda-forge       8MB
+  + libstdcxx                  16.2.0  h934c35e_7            conda-forge       7MB
+  + libstdcxx-devel_linux-64   16.2.0  h86e191b_107          conda-forge      23MB
+  + libzlib                     1.3.2  h25fd6f3_3            conda-forge      64kB
+  + sysroot_linux-64             2.34  h087de78_3            conda-forge      41MB
+  + tzdata                      2026c  h151e31d_0            conda-forge     119kB
+  + zstd                        1.5.7  hb78ec9c_7            conda-forge     601kB
+
+  Summary:
+
+  Install: 19 packages
+
+  Total download: 193MB
+
+────────────────────────────────────────────────────────────────────────────────────
+
+
+warning  libmamba Security Warning: This transaction includes executing package scripts (pre/post-link/unlink) if present. These scripts can contain arbitrary code. Please ensure you trust the package sources.
+
+Transaction starting
+Linking kernel-headers_linux-64-5.14.0-he073ed8_3
+Linking libstdcxx-devel_linux-64-16.2.0-h86e191b_107
+Linking libgcc-devel_linux-64-16.2.0-he3ce08f_107
+Linking tzdata-2026c-h151e31d_0
+Linking sysroot_linux-64-2.34-h087de78_3
+Linking libgomp-16.2.0-he0feb66_7
+Linking libzlib-1.3.2-h25fd6f3_3
+Linking _openmp_mutex-4.5-20_gnu
+Linking zstd-1.5.7-hb78ec9c_7
+Linking libgcc-16.2.0-ha9f2e26_7
+Linking ld_impl_linux-64-2.46.1-default_hbd61a6d_102
+Linking libstdcxx-16.2.0-h934c35e_7
+Linking binutils_impl_linux-64-2.46.1-default_hfdba357_102
+Linking libsanitizer-16.2.0-h3048135_7
+Linking binutils_linux-64-2.46.1-default_h4852527_102
+Linking gcc_impl_linux-64-16.2.0-h9891192_7
+Linking gxx_impl_linux-64-16.2.0-h0d273dc_7
+Linking gcc_linux-64-16.2.0-h0ab548f_2
+Linking gxx_linux-64-16.2.0-h23aca61_2
+
+Transaction finished
+
+
+To activate this environment, use:
+
+    micromamba activate /home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/.vul4py_tools/compiler_envs/gcc
+
+Or to execute a single command in this environment, use:
+
+    micromamba run -p /home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/.vul4py_tools/compiler_envs/gcc mycommand
+
+[vul4py] Creating env: /home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/.vul4py_tools/pyenvs/py311 (python=3.11 pip) via micromamba
+Using Cached Shard Index for conda-forge/linux-64                                                   ✔ Done
+Using Cached Shard Index for conda-forge/noarch                                                     ✔ Done
+Fetching and Parsing Packages' Shards                                                           ⧖ Starting
+Fetching and Parsing Packages' Shards                                                     ✔ Done (0.6 sec)
+
+Resolving Environment                                                                           ⧖ Starting
+Resolving Environment                                                                     ✔ Done (0.2 sec)
+
+Transaction
+
+  Prefix: /home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/.vul4py_tools/pyenvs/py311
+
+  Updating specs:
+
+   - python=3.11
+   - pip
+
+
+  Package               Version  Build                 Channel           Size
+───────────────────────────────────────────────────────────────────────────────
+  Install:
+───────────────────────────────────────────────────────────────────────────────
+
+  + _openmp_mutex           4.5  20_gnu                conda-forge     Cached
+  + bzip2                 1.0.8  hda65f42_10           conda-forge      258kB
+  + ca-certificates   2026.7.22  hbd8a1cb_0            conda-forge      132kB
+  + ld_impl_linux-64     2.46.1  default_hbd61a6d_102  conda-forge     Cached
+  + libexpat              2.8.5  hd2095e1_0            conda-forge       78kB
+  + libffi                3.7.0  h81df57d_1            conda-forge       68kB
+  + libgcc               16.2.0  ha9f2e26_7            conda-forge     Cached
+  + libgomp              16.2.0  he0feb66_7            conda-forge     Cached
+  + liblzma               5.8.3  hb03c661_1            conda-forge      113kB
+  + libnsl                2.0.1  hb9d3cd8_1            conda-forge       34kB
+  + libpython           3.11.17  h0c77377_1_cpython    conda-forge        8MB
+  + libsqlite            3.53.4  h0737f62_103          conda-forge      967kB
+  + libstdcxx            16.2.0  h934c35e_7            conda-forge     Cached
+  + libuuid              2.42.4  hcfc3c73_0            conda-forge       34kB
+  + libxcrypt            4.4.38  h280c20c_0            conda-forge      102kB
+  + libzlib               1.3.2  h25fd6f3_3            conda-forge     Cached
+  + ncurses                 6.6  hdb14827_1            conda-forge      911kB
+  + openssl               3.6.5  h781a0a9_0            conda-forge        3MB
+  + packaging              26.3  pyhc364b38_0          conda-forge      116kB
+  + pip                  26.2.1  pyh8b19718_0          conda-forge        1MB
+  + python              3.11.17  h5f976f7_1_cpython    conda-forge       23MB
+  + readline                8.3  hd6e31c0_1            conda-forge      349kB
+  + setuptools           84.0.0  pyh332efcf_0          conda-forge      524kB
+  + tk                   8.6.13  noxft_h1df4ec4_4      conda-forge        4MB
+  + tzdata                2026c  h151e31d_0            conda-forge     Cached
+  + wheel                0.48.0  pyhd8ed1ab_0          conda-forge       35kB
+  + zstd                  1.5.7  hb78ec9c_7            conda-forge     Cached
+
+  Summary:
+
+  Install: 27 packages
+
+  Total download: 43MB
+
+───────────────────────────────────────────────────────────────────────────────
+
+
+warning  libmamba Security Warning: This transaction includes executing package scripts (pre/post-link/unlink) if present. These scripts can contain arbitrary code. Please ensure you trust the package sources.
+
+Transaction starting
+Linking libzlib-1.3.2-h25fd6f3_3
+Linking libgomp-16.2.0-he0feb66_7
+Linking zstd-1.5.7-hb78ec9c_7
+Linking _openmp_mutex-4.5-20_gnu
+Linking ld_impl_linux-64-2.46.1-default_hbd61a6d_102
+Linking libgcc-16.2.0-ha9f2e26_7
+Linking bzip2-1.0.8-hda65f42_10
+Linking libnsl-2.0.1-hb9d3cd8_1
+Linking libffi-3.7.0-h81df57d_1
+Linking libsqlite-3.53.4-h0737f62_103
+Linking liblzma-5.8.3-hb03c661_1
+Linking ncurses-6.6-hdb14827_1
+Linking tk-8.6.13-noxft_h1df4ec4_4
+Linking libstdcxx-16.2.0-h934c35e_7
+Linking libexpat-2.8.5-hd2095e1_0
+Linking libuuid-2.42.4-hcfc3c73_0
+Linking libxcrypt-4.4.38-h280c20c_0
+Linking readline-8.3-hd6e31c0_1
+Linking libpython-3.11.17-h0c77377_1_cpython
+Linking tzdata-2026c-h151e31d_0
+Linking ca-certificates-2026.7.22-hbd8a1cb_0
+Linking openssl-3.6.5-h781a0a9_0
+Linking python-3.11.17-h5f976f7_1_cpython
+Linking packaging-26.3-pyhc364b38_0
+Linking setuptools-84.0.0-pyh332efcf_0
+Linking wheel-0.48.0-pyhd8ed1ab_0
+Linking pip-26.2.1-pyh8b19718_0
+
+Transaction finished
+
+
+To activate this environment, use:
+
+    micromamba activate /home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/.vul4py_tools/pyenvs/py311
+
+Or to execute a single command in this environment, use:
+
+    micromamba run -p /home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/.vul4py_tools/pyenvs/py311 mycommand
+
+Scanning CVEs:   0%|          | 0/5 [00:00<?, ?it/s]Scanning CVEs:  20%|██        | 1/5 [00:25<01:42, 25.74s/it]Scanning CVEs:  40%|████      | 2/5 [00:55<01:24, 28.17s/it]Scanning CVEs:  60%|██████    | 3/5 [01:23<00:56, 28.19s/it]Scanning CVEs:  80%|████████  | 4/5 [01:49<00:27, 27.06s/it]Scanning CVEs: 100%|██████████| 5/5 [02:17<00:00, 27.36s/it]Scanning CVEs: 100%|██████████| 5/5 [02:17<00:00, 27.41s/it]
+[+] Scan complete. Report written to /home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/scan_report.tsv
+    pfes columns are passed/failed/errored/skipped per run; '-' means junit was not produced (rc-based fallback in effect).

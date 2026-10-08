@@ -1,0 +1,193 @@
+prepare:   0%|          | 0/5 [00:00<?, ?it/s]Cloning into '/home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/CVE-2021-28363/fixed'...
+Note: switching to '8d65ea1ecf6e2cdc27d42124e587c1b83a3118b0'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 8d65ea1e Merge pull request from GHSA-5phf-pp7p-vc2r
+Cloning into '/home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/CVE-2021-28363/vulnerable'...
+Note: switching to '5e3432646ad63749ff0d655c157fe293cdc6c2aa'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 5e343264 Add proper stacklevel to method_allowlist warning
+Cloning into '/home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/CVE-2021-32839/fixed'...
+prepare:  20%|██        | 1/5 [00:02<00:10,  2.50s/it]Note: switching to '8238a9e450ed1524e40cb3a8b0b3c00606903aeb'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 8238a9e Optimize regular expression for identifying line breaks in comments.
+Cloning into '/home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/CVE-2021-32839/vulnerable'...
+Note: switching to 'e66046785b816e5c2d22f101f36faefd19c4a771'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at e660467 Fix parsing of scientific numbers (fixes #399).
+prepare:  40%|████      | 2/5 [00:03<00:04,  1.58s/it]Cloning into '/home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/CVE-2022-29217/fixed'...
+Note: switching to '9c528670c455b8d948aff95ed50e22940d1ad3fc'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 9c52867 Merge pull request from GHSA-ffqj-6fqr-9h24
+Cloning into '/home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/CVE-2022-29217/vulnerable'...
+Note: switching to '24b29adfebcb4f057a3cef5aaf35653bc0c1c8cc'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 24b29ad Update CHANGELOG.rst (#751)
+Cloning into '/home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/CVE-2025-43859/fixed'...
+prepare:  60%|██████    | 3/5 [00:04<00:02,  1.29s/it]Note: switching to '114803a29ce50116dc47951c690ad4892b1a36ed'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 114803a Merge commit from fork
+Cloning into '/home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/CVE-2025-43859/vulnerable'...
+Note: switching to '9462006f6ce4941661888228cbd4ac1ea80689b0'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 9462006 Bump version to 0.15.0
+prepare:  80%|████████  | 4/5 [00:05<00:01,  1.38s/it]Cloning into '/home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/CVE-2025-46656/fixed'...
+Note: switching to '959561879693bf4a576f99c6733b50b01186aa08'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 9595618 prevent very large headline prefixes
+Cloning into '/home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/CVE-2025-46656/vulnerable'...
+Note: switching to 'fe8a821a20629594668288cdfcfe74dd07b62bbf'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at fe8a821 bump to version v0.14.0
+prepare: 100%|██████████| 5/5 [00:06<00:00,  1.10s/it]prepare: 100%|██████████| 5/5 [00:06<00:00,  1.30s/it]
+OK=5  SKIP=0  ERROR=0
+[+] wrote /home/ec2-user/networks-llm-security-repair-v2/vul4py/workspaces/prepare_summary.tsv
