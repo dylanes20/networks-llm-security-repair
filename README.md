@@ -6,7 +6,7 @@ This project sends vulnerable Python code to `gpt-6-luna`, records its repair cl
 
 ## Execution status
 
-The measured run is pending. No values from earlier executions are used in the current results. This README's current-results section is regenerated from the new records after execution.
+One measured case has been completed and independently verified. Its API response, latency, token usage and evaluation evidence are published below. The current-results section is regenerated from the saved records.
 
 The written assignment requests five cases. A single case is sufficient to exercise the pipeline, but does not fulfill that written case count. Unfinished or invalid cases must be reported explicitly.
 
@@ -38,25 +38,52 @@ read -rsp "OpenAI API key: " OPENAI_API_KEY
 export OPENAI_API_KEY
 ```
 
-Do not publish the API key, credentials or `client.py`.
+Publish `client.py` with the project code. Keep the API key and credentials outside the repository; the client reads `OPENAI_API_KEY` from the environment.
 
-## One integrated command
+## Running the experiment with client.py
 
-First check prerequisites without making an API request:
+The workflow separates generation, independent verification and result collection.
+
+1. Select a prepared, validated case. In `client.py`, set `CASE_ID` to its CVE identifier. `PROJECT` and `OUTPUT` are derived automatically. The vulnerable workspace must exist and the baseline scan must mark the case `OK`. Verify the environment and case without making an API request:
+
+   ```bash
+   python repair.py --case NEW_CVE --check
+   ```
+
+2. Check the client syntax and generate one response:
+
+   ```bash
+   python -m py_compile client.py
+   python client.py
+   ```
+
+3. Independently evaluate the saved patch, replacing `NEW_CVE` with the same identifier:
+
+   ```bash
+   python vul4py/scripts/evaluate.py --agent student --vuln-id NEW_CVE --workspaces "$PWD/vul4py/workspaces" --runs "$PWD/runs/final"
+   ```
+
+4. Run Semgrep and complete the CSV, metrics, evidence and README:
+
+   ```bash
+   python finish_results.py --case NEW_CVE
+   ```
+
+`client.py` refuses to overwrite an existing attempt. The published `CVE-2021-32839` case is already complete and must not be regenerated. A new case must be prepared and validated before these steps. API and parsing errors are saved; they do not provide a usable patch for the normal evaluation steps and must be reported as incomplete observations.
+
+Runs use `runs/final/student/<CVE>/`. `student` is the evaluator's label. Published evidence is copied to `results/evidence/<CVE>/`.
+
+On Amazon Linux, the system `patch` utility is also required by Vul4Py:
 
 ```bash
-python repair.py --case CVE-2021-32839 --check
+sudo dnf install -y patch
 ```
 
-Then execute one measured request, freezing, evaluation, Semgrep, CSV, metrics and README update:
+## Client responsibilities
 
-```bash
-python repair.py --case CVE-2021-32839
-```
+`client.py` follows the basic client structure: load vulnerable source, build messages, create the OpenAI client, send a request and save the response. It additionally records UTC time, API latency, token usage, the model claim and confidence, and the unchanged patch. It freezes successful generation files before independent evaluation. It does not execute the functional or security tests.
 
-For five validated cases, repeat `--case` for each identifier in the same command. The runner refuses duplicate IDs, unvalidated cases and existing attempts. A completed failure is preserved; no patch repair or retry is performed.
-
-Runs use `runs/final/student/<CVE>/`. `student` is the evaluator's run label. Curated published evidence is copied to `results/evidence/<CVE>/`; ignored development folders are not mixed into these records.
+The API key is read from `OPENAI_API_KEY`. The request uses the model and fixed system prompt from `config.py`. `max_retries=0` disables automatic generation retries; `timeout=180` bounds the API wait. JSON mode constrains the response envelope but cannot guarantee that the generated diff applies.
 
 ## Prompt and experimental isolation
 
@@ -96,13 +123,29 @@ The denominator follows the assignment's recorded-case implementation. API and i
 
 ## Code organization
 
-The single user-facing entry point is `repair.py`. Benchmark and analyzer adapters remain separate as required by the revised architecture tutorial. `source.py` collects code, `benchmarks/vul4py.py` wraps the official evaluator, `analyzers/semgrep.py` scans code, `result_writer.py` writes the CSV and records, and `metrics.py` calculates metrics. `models.py` and the base interfaces define shared contracts.
+`client.py` handles generation and is the file used to explain the API client. `repair.py` retains the integrated workflow and the validation/helper functions used by `finish_results.py`; it is an alternative runner, not another generation step for an already attempted case. `finish_results.py` completes verification records without another API call. `source.py` collects source, `benchmarks/vul4py.py` wraps the evaluator, `analyzers/semgrep.py` scans code, `result_writer.py` writes records and CSV, and `metrics.py` calculates metrics. Shared models and interfaces keep the benchmark and analyzer replaceable.
+
+## Decisions and limitations of the measured execution
+
+- The published case was generated with the integrated `repair.py` runner. The new `client.py` exposes the generation stage separately for the demonstration. Existing measurements belong to the original saved request; adding a client file does not create a new measurement.
+- The measured request produced a patch and claim before independent tests. When verification resumed, patch application and functional tests passed, but security testing initially could not start because the system `patch` executable was missing. Installing it and evaluating the same frozen patch completed verification. No new model request or manual patch change was needed.
+- Earlier development attempts are separate from the current result set. This is not evidence of a first-ever successful attempt on this CVE, nor an unbiased estimate of model performance. Current metrics describe only the single published observation.
+- The case was validated with Vul4Py baselines. Source serialization uses the vulnerable tree; the model receives no reference fix, baseline verdict or test feedback.
+- The final patch applied and passed functional and security tests. Semgrep found zero findings before and after; those counts alone do not demonstrate a security improvement. Vul4Py supplies the primary verdict.
+- API latency was 82,980.3 ms; input/output usage was 57,502/847 tokens. Evaluation took 25.0 seconds separately. API latency must not be confused with evaluation duration or network round-trip time.
+- One published case gives VRR=100% and FAR=0% for this observation only. Four additional cases are still needed for the written five-case requirement.
 
 ## Network explanation for the defense
 
-DNS maps the API hostname to an IP address. TCP establishes a reliable ordered connection, normally to server port 443. TLS authenticates the server, encrypts content and protects its integrity. HTTPS carries the JSON request and response. SSH, normally on port 22, supports remote EC2 editing in VS Code.
+1. **DNS:** resolves the API hostname to an IP address.
+2. **TCP:** normally opens a reliable ordered connection to server port 443 with SYN, SYN-ACK and ACK. Existing connections may be reused.
+3. **TLS:** validates the server certificate and negotiates encryption and integrity protection. The API key and source code are protected in transit.
+4. **HTTPS:** the SDK sends a JSON request to the chat-completions endpoint with the model and messages. The response contains generated text and token usage. Typical packet captures cannot read the encrypted payload.
+5. **Latency:** `perf_counter()` surrounds the API call. The measured duration includes connection setup when needed, transfer, server waiting, model generation and response reception. Local source serialization, evaluation and Semgrep are outside that interval.
+6. **HTTP errors:** 400 means an invalid request; 401 indicates authentication failure; 403 indicates denied access; 404 indicates an unavailable resource or endpoint; 429 can mean rate or quota limits; 5xx indicates server or gateway failure. Receiving an HTTP error means an HTTP response was received, not that TCP failed to connect.
+7. **Failures before HTTP:** DNS resolution, connection and TLS failures may produce exceptions without an HTTP status. The client saves the exception type and elapsed API time. This protocol disables automatic retries.
 
-401 means an authentication problem; 429 may mean a rate limit or insufficient quota; 5xx indicates server/gateway failure. A timeout means a configured wait was exceeded. None of these alone establishes repair failure. HTTPS packet captures normally cannot expose the plaintext code or API key.
+SSH, normally on port 22, is the separate connection used by VS Code to edit files on EC2. It is not the HTTPS connection to OpenAI.
 
 ## Publishing
 
