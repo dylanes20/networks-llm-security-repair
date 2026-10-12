@@ -1,92 +1,558 @@
-Measuring Repair Claims with Independent Python Security Tests
-Dylan Espinoza | Computer Networks | AWS EC2
-This project sends vulnerable Python code to gpt-6-luna, records its repair claim, confidence and proposed patch, then compares the claim with independent Vul4Py verification. Semgrep supplies secondary diagnostic measurements.
-Execution status
-One measured case has been completed and independently verified. Its API response, latency, token usage and evaluation evidence are published below. The current-results section is regenerated from the saved records.
-The written assignment requests five cases. A single case is sufficient to exercise the pipeline, but does not fulfill that written case count. Unfinished or invalid cases must be reported explicitly.
-Setup
+# Measuring False Assurance in LLM-Based Vulnerability Repair
+
+**Dylan Espinoza | Computer Networks | AWS EC2**
+
+The objective is to compare the LLM's repair claims with Vul4Py's independent verification results to measure false assurance.
+
+The experiment sends vulnerable Python source code to `gpt-6-luna` through the OpenAI API. It saves the proposed patch, success claim, confidence, API latency and token usage. The response is frozen before Vul4Py independently evaluates the patch. Semgrep provides additional static-analysis measurements.
+
+## Current status
+
+Five cases were selected. Three passed Vul4Py baseline validation, and one model-generated repair has been completed and independently verified.
+
+Baseline validation and model-patch verification are different:
+
+- Baseline validation checks whether the case's environment and test oracles work.
+- Patch verification checks whether the model's proposed repair applies and passes functional and security tests.
+
+The remaining cases are reported as incomplete. Their results are not fabricated.
+
+## Validation and analysis of the five selected cases
+
+| CVE | Project | Baseline status | Baseline analysis | Current LLM repair status |
+|---|---|---|---|---|
+| CVE-2021-28363 | urllib3 | INFRA_BROKEN | All four baseline executions returned code 4. The environment or test runner must be corrected before using the case. | Not completed |
+| CVE-2021-32839 | sqlparse | OK | Functional tests passed on both versions. Security tests failed on the vulnerable version and passed on the fixed version, validating the oracle. | Verified repair: the patch applied and passed functional and security tests |
+| CVE-2022-29217 | PyJWT | UNEXPECTED | Functional tests passed, but security tests failed on both vulnerable and fixed versions. The baseline requires investigation. | Not completed |
+| CVE-2025-43859 | h11 | OK | Functional tests passed on both versions. Security tests failed on the vulnerable version and passed on the fixed version, validating the oracle. | Not completed |
+| CVE-2025-46656 | markdownify | OK | Functional tests passed on both versions. Security tests failed on the vulnerable version and passed on the fixed version, validating the oracle. | Not completed |
+
+These statuses come from the saved [Vul4Py baseline report](results/scan_report.tsv).
+
+Only cases marked `OK` are eligible for generation. A baseline infrastructure error is not a failed model repair.
+
+## Installation
+
+The project runs on an AWS EC2 instance using Amazon Linux and Python.
+
+Create and activate the virtual environment:
+
+```bash
 python3 -m venv venv
 source venv/bin/activate
 python -m pip install -r requirements.txt
-Use the already prepared Vul4Py installation, or clone and pin it:
+```
+
+Install the system patch utility required by Vul4Py:
+
+```bash
+sudo dnf install -y patch
+```
+
+If Vul4Py is not already installed, clone it and use the pinned revision:
+
+```bash
 git clone https://github.com/tabudz/vul4py.git
 git -C vul4py checkout "$(cat vul4py_commit.txt)"
-python vul4py/scripts/prepare.py --csv cases.csv --workspace-root vul4py/workspaces --jobs 1
-python vul4py/scripts/vul4py.py --workspace-root vul4py/workspaces scan --jobs 1
-Only OK cases are eligible. Never send the fixed tree or evaluator outputs to the model.
-Configure credentials
-Read the instructor-provided key locally without writing it into source code:
+```
+
+Prepare the selected cases and validate their baselines:
+
+```bash
+python vul4py/scripts/prepare.py \
+  --csv cases.csv \
+  --workspace-root vul4py/workspaces \
+  --jobs 1
+
+python vul4py/scripts/vul4py.py \
+  --workspace-root vul4py/workspaces \
+  scan --jobs 1
+```
+
+Inspect the report:
+
+```bash
+cat vul4py/workspaces/scan_report.tsv
+```
+
+A successful download or preparation does not establish that a case is valid. Its scan status must be `OK`.
+
+## API key configuration
+
+The client reads the API key from the environment. It is not written into the source code.
+
+In the project terminal:
+
+```bash
 read -rsp "OpenAI API key: " OPENAI_API_KEY
 export OPENAI_API_KEY
-Publish client.py with the project code. Keep the API key and credentials outside the repository; the client reads OPENAI_API_KEY from the environment.
-Running the experiment with client.py
-The workflow separates generation, independent verification and result collection.
-1. Select a prepared, validated case. In client.py, set CASE_ID to its CVE identifier. PROJECT and OUTPUT are derived automatically. The vulnerable workspace must exist and the baseline scan must mark the case OK. Verify the environment and case without making an API request:
-   python repair.py --case NEW_CVE --check
-2. Check the client syntax and generate one response:
-   python -m py_compile client.py
-   python client.py
-3. Independently evaluate the saved patch, replacing NEW_CVE with the same identifier:
-   python vul4py/scripts/evaluate.py --agent student --vuln-id NEW_CVE --workspaces "$PWD/vul4py/workspaces" --runs "$PWD/runs/final"
-4. Run Semgrep and complete the CSV, metrics, evidence and README:
-   python finish_results.py --case NEW_CVE
-client.py refuses to overwrite an existing attempt. The published CVE-2021-32839 case is already complete and must not be regenerated. A new case must be prepared and validated before these steps. API and parsing errors are saved; they do not provide a usable patch for the normal evaluation steps and must be reported as incomplete observations.
-Runs use runs/final/student/<CVE>/. student is the evaluator's label. Published evidence is copied to results/evidence/<CVE>/.
-On Amazon Linux, the system patch utility is also required by Vul4Py:
-sudo dnf install -y patch
-Client responsibilities
-client.py follows the basic client structure: load vulnerable source, build messages, create the OpenAI client, send a request and save the response. It additionally records UTC time, API latency, token usage, the model claim and confidence, and the unchanged patch. It freezes successful generation files before independent evaluation. It does not execute the functional or security tests.
-The API key is read from OPENAI_API_KEY. The request uses the model and fixed system prompt from config.py. max_retries=0 disables automatic generation retries; timeout=180 bounds the API wait. JSON mode constrains the response envelope but cannot guarantee that the generated diff applies.
-Prompt and experimental isolation
-The system prompt is the assignment's fixed text in config.py. A JSON response envelope specifies claimed_success, confidence and patch; JSON mode constrains the outer response format. It does not guarantee a valid diff or successful repair.
-The model sees only vulnerable Python source and instructions. It receives no fixed code, reference patches, test feedback, Semgrep results, tools or earlier responses. Each case gets one generation call. SDK automatic retries are disabled.
-Raw API output, request, normalized claim, confidence and unchanged patch are saved before evaluation. SHA-256 hashes and read-only permissions freeze them. Hashes are checked before and after evaluation.
-Measurements and verdict
-API latency uses perf_counter() immediately around the API call and is reported in milliseconds. It includes transport, waiting, model generation and response reception; it excludes local serialization, Vul4Py and Semgrep. Token counts come from API usage. UTC timestamps and errors are recorded. Missing data is never replaced by invented values.
-Vul4Py independently attempts patch application, then executes functional and exploit oracles. A verified repair requires all three to succeed. Rejected patches have verified repair false; tests not executed stay null. Infrastructure errors or unexpected oracle codes remain explicit and are not claimed as actual test failures.
-Semgrep records counts before and, when a patched candidate exists, after. Its raw JSON/logs are preserved. Scan errors are not zero findings, and Semgrep never overrides the primary verdict.
-Required output
-results/results.csv uses these fields:
-case_id,model,timestamp,llm_claimed_success,llm_confidence,
-patch_applied,security_test_pass,functional_test_pass,verified_repair,
-false_assurance,latency_ms,input_tokens,output_tokens,
-semgrep_findings_before,semgrep_findings_after,api_success,error_type
-Individual immutable records live in results/records/. Evidence includes the frozen response and patch, API timing/usage, evaluator JSON/log, benchmark logs and Semgrep output. results/scan_report.tsv preserves validation evidence.
-results/metrics.json records case count, positive claims, verified repairs and false assurances:
-- VRR = verified repairs / recorded cases.
-- FAR = false assurances / positive claims; undefined when no positive claims exist.
-The denominator follows the assignment's recorded-case implementation. API and infrastructure errors must be reported with the counts; they do not measure repair capability. Null verification is an unresolved observation, not an assertion of repair success. Report the extent of incomplete records alongside percentages.
-Code organization
-client.py handles generation and is the file used to explain the API client. repair.py retains the integrated workflow and the validation/helper functions used by finish_results.py; it is an alternative runner, not another generation step for an already attempted case. finish_results.py completes verification records without another API call. source.py collects source, benchmarks/vul4py.py wraps the evaluator, analyzers/semgrep.py scans code, result_writer.py writes records and CSV, and metrics.py calculates metrics. Shared models and interfaces keep the benchmark and analyzer replaceable.
-Decisions and limitations of the measured execution
-- The published case was generated with the integrated repair.py runner. The new client.py exposes the generation stage separately for the demonstration. Existing measurements belong to the original saved request; adding a client file does not create a new measurement.
-- The measured request produced a patch and claim before independent tests. When verification resumed, patch application and functional tests passed, but security testing initially could not start because the system patch executable was missing. Installing it and evaluating the same frozen patch completed verification. No new model request or manual patch change was needed.
-- Earlier development attempts are separate from the current result set. This is not evidence of a first-ever successful attempt on this CVE, nor an unbiased estimate of model performance. Current metrics describe only the single published observation.
-- The case was validated with Vul4Py baselines. Source serialization uses the vulnerable tree; the model receives no reference fix, baseline verdict or test feedback.
-- The final patch applied and passed functional and security tests. Semgrep found zero findings before and after; those counts alone do not demonstrate a security improvement. Vul4Py supplies the primary verdict.
-- API latency was 82,980.3 ms; input/output usage was 57,502/847 tokens. Evaluation took 25.0 seconds separately. API latency must not be confused with evaluation duration or network round-trip time.
-- One published case gives VRR=100% and FAR=0% for this observation only. Four additional cases are still needed for the written five-case requirement.
-Network explanation for the defense
-1. DNS: resolves the API hostname to an IP address.
-2. TCP: normally opens a reliable ordered connection to server port 443 with SYN, SYN-ACK and ACK. Existing connections may be reused.
-3. TLS: validates the server certificate and negotiates encryption and integrity protection. The API key and source code are protected in transit.
-4. HTTPS: the SDK sends a JSON request to the chat-completions endpoint with the model and messages. The response contains generated text and token usage. Typical packet captures cannot read the encrypted payload.
-5. Latency: perf_counter() surrounds the API call. The measured duration includes connection setup when needed, transfer, server waiting, model generation and response reception. Local source serialization, evaluation and Semgrep are outside that interval.
-6. HTTP errors: 400 means an invalid request; 401 indicates authentication failure; 403 indicates denied access; 404 indicates an unavailable resource or endpoint; 429 can mean rate or quota limits; 5xx indicates server or gateway failure. Receiving an HTTP error means an HTTP response was received, not that TCP failed to connect.
-7. Failures before HTTP: DNS resolution, connection and TLS failures may produce exceptions without an HTTP status. The client saves the exception type and elapsed API time. This protocol disables automatic retries.
-SSH, normally on port 22, is the separate connection used by VS Code to edit files on EC2. It is not the HTTPS connection to OpenAI.
-Publishing
-Review results/results.csv, results/metrics.json, evidence and the generated README table. Then commit code and results with meaningful messages and push to the existing GitHub repository. Do not rewrite development history or publish secrets. Historical commits remain distinct from the current result set.
-Limitations
-A model claim and confidence are predictions, not proof. Applicability alone does not prove repair. Zero Semgrep findings do not prove security. Small case sets and benchmark oracles limit generalization. A valid experiment records failed repairs as well as successes.
+printf '\n'
+```
+
+Paste the key at the prompt and press Enter. The characters are hidden.
+
+Configure it again when starting a new shell session if the variable is no longer set. Never publish the API key, passwords or other credentials.
+
+## Workflow and responsibilities
+
+### 1. Prepare and validate the case
+
+Before calling the model, Vul4Py prepares the vulnerable and fixed versions of the selected project.
+
+`vul4py/scripts/prepare.py` creates the workspaces and metadata.
+
+`vul4py/scripts/vul4py.py scan` builds the environments and runs functional and security tests on both versions.
+
+The fixed version is used only for independent baseline validation. It is never included in the model request.
+
+### 2. Start client.py and select the case
+
+`client.py` defines `CASE_ID`, which selects the vulnerability.
+
+The source and output paths are derived from that identifier:
+
+```python
+CASE_ID = "CVE-2021-32839"
+
+PROJECT = Path("vul4py/workspaces") / CASE_ID / "vulnerable"
+OUTPUT = Path("runs/final/student") / CASE_ID
+```
+
+The client checks that the vulnerable directory and API key exist and refuses to overwrite an existing attempt.
+
+The current standalone client does not automatically check the scan report. The operator must confirm that the selected case is marked `OK`.
+
+### 3. Read the instructions and vulnerable source
+
+`config.py` defines the model and the fixed repair instructions.
+
+`source.py` reads the vulnerable project's Python source files and collects their content as text.
+
+`client.py` combines these instructions and the vulnerable source into the API messages.
+
+The request contains the instructions and project source, rather than uploading `client.py` and `config.py` themselves.
+
+The model does not receive:
+
+- The fixed project.
+- A reference patch.
+- Vul4Py verification results.
+- Semgrep findings.
+- Earlier model responses.
+
+### 4. Send the request to OpenAI
+
+`client.py` creates the OpenAI SDK client and sends one chat-completions request.
+
+The client uses:
+
+```python
+max_retries=0
+timeout=180
+```
+
+Automatic retries are disabled. The timeout configures the waiting limit for network operations.
+
+JSON mode is used for the response envelope. It helps produce structured output but does not guarantee a valid or applicable patch.
+
+The SDK and operating system handle the network protocols. Our code does not manually send SYN or ACK packets.
+
+### 5. Receive and record the model response
+
+The expected response contains:
+
+- `claimed_success`: whether the model believes it repaired the vulnerability.
+- `confidence`: its stated confidence between 0 and 1.
+- `patch`: the proposed unified diff.
+
+The success claim and confidence are predictions, not proof.
+
+The client also records:
+
+- Model identifier.
+- UTC timestamp.
+- API latency in milliseconds.
+- Input tokens.
+- Output tokens.
+- API or parsing errors.
+
+### 6. Freeze the generation evidence
+
+Before verification, the client saves:
+
+```text
+request.json
+api_response.json
+raw_response.txt
+llm_response.json
+patch.diff
+generation.json
+frozen.json
+```
+
+SHA-256 hashes record the contents of the generation files. Read-only permissions help prevent accidental changes.
+
+The completion helper checks the hashes before collecting results and again before writing the final record.
+
+The patch, claim and confidence must not be changed after seeing the verification results.
+
+### 7. Apply and independently evaluate the patch
+
+`vul4py/scripts/evaluate.py` coordinates the independent evaluation.
+
+It calls `vul4py/scripts/vul4py.py` to create a candidate copy of the vulnerable project, apply the saved patch and execute the tests.
+
+The controls are:
+
+- **A — Applicability:** does the patch apply?
+- **F — Functional:** does the candidate preserve the required functionality?
+- **S — Security:** does the candidate pass the benchmark's security test?
+
+A verified repair requires all three to pass:
+
+```text
+V = A × F × S
+```
+
+If the patch does not apply, functional and security tests are not executed. Their unexecuted results must not be described as observed test failures.
+
+The evaluator tests a separate candidate. It does not deploy the patch to an external application.
+
+### 8. Run Semgrep as a secondary analyzer
+
+`finish_results.py` collects the saved response and evaluation.
+
+`benchmarks/vul4py.py` provides access to the evaluated candidate, reconstructing it from the same frozen patch if necessary.
+
+`analyzers/semgrep.py` scans the original source and patched candidate without executing their application code.
+
+In this workflow, Semgrep runs during result completion, after generation and evaluation.
+
+“Before” means the original unpatched source. “After” means the patched source. It does not mean that the first Semgrep scan happened before the API request.
+
+The pre-request validation is the Vul4Py baseline scan. Neither baseline verdicts nor Semgrep findings are sent to the model.
+
+Zero Semgrep findings do not prove security. Semgrep does not determine whether a repair is verified.
+
+### 9. Save the results and calculate metrics
+
+`result_writer.py` writes the case record and CSV.
+
+`metrics.py` calculates VRR and FAR.
+
+`finish_results.py` copies the evidence and updates the README result table without making another OpenAI request.
+
+## Flow diagram
+
+```mermaid
+flowchart TD
+    A["Vul4Py: prepare and validate baseline"] --> B["client.py: select eligible case"]
+    C["config.py: model and instructions"] --> B
+    D["source.py: vulnerable Python source"] --> B
+    B --> E["OpenAI API over HTTPS"]
+    E --> F["Save claim, confidence, patch, latency and tokens"]
+    F --> G["Freeze generation evidence"]
+    G --> H["evaluate.py and vul4py.py: apply and test"]
+    H --> I["finish_results.py: collect evaluation"]
+    I --> J["semgrep.py: scan original and candidate"]
+    J --> K["result_writer.py and metrics.py"]
+    K --> L["CSV, metrics, evidence and README"]
+```
+
+## Running a prepared and validated case
+
+First confirm that the case is marked `OK`.
+
+Change this line in `client.py` to the selected identifier:
+
+```python
+CASE_ID = "NEW_CVE"
+```
+
+Replace `NEW_CVE` with the actual CVE identifier and save the file.
+
+Activate the environment, configure the API key, and run:
+
+```bash
+source venv/bin/activate
+python -m py_compile client.py
+python client.py
+```
+
+If generation succeeds and the patch is saved and frozen, evaluate it:
+
+```bash
+python vul4py/scripts/evaluate.py \
+  --agent student \
+  --vuln-id NEW_CVE \
+  --workspaces "$PWD/vul4py/workspaces" \
+  --runs "$PWD/runs/final"
+```
+
+Use the same CVE identifier in the evaluation command.
+
+Complete the records and secondary analysis:
+
+```bash
+python finish_results.py --case NEW_CVE
+```
+
+Run folders are stored under:
+
+```text
+runs/final/student/<CVE>/
+```
+
+Published evidence is stored under:
+
+```text
+results/evidence/<CVE>/
+```
+
+`student` is the evaluator's run label.
+
+The ordinary evaluation and completion commands require usable generation evidence. API or parsing errors must be preserved and reported as incomplete observations; the standalone client does not automatically aggregate those error attempts.
+
+## Using a new, unvalidated case
+
+A new case must have valid benchmark metadata and a prepared workspace before generation.
+
+Use `prepare.py` with a CSV containing the case's `vuln_id`, `repo_url` and `fix_commit`.
+
+`setup` installs dependencies for an existing workspace. It does not download an unknown CVE.
+
+Validate a prepared case individually:
+
+```bash
+python vul4py/scripts/vul4py.py \
+  --workspace-root "$PWD/vul4py/workspaces" \
+  scan --jobs 1 --only NEW_CVE
+```
+
+Inspect the updated scan report and proceed only if the case is marked `OK`.
+
+Do not send the fixed version or validation results to the model.
+
+## Showing an already completed case
+
+The published `CVE-2021-32839` execution is complete. Do not delete its evidence or overwrite it with another generation.
+
+Show its saved record and verification:
+
+```bash
+cat results/records/CVE-2021-32839.json
+cat results/evidence/CVE-2021-32839/eval.json
+cat results/evidence/CVE-2021-32839/generation.json
+```
+
+These commands do not call OpenAI.
+
+Repeating verification of the same saved patch is different from generating another patch. The saved API latency belongs to the original model request, not to repeated local tests.
+
+## Code organization
+
+| File | Responsibility |
+|---|---|
+| `client.py` | Sends the API request and saves the response, measurements and frozen generation evidence |
+| `config.py` | Defines the model and fixed instructions |
+| `source.py` | Collects the vulnerable Python source |
+| `vul4py/scripts/evaluate.py` | Coordinates independent patch verification |
+| `vul4py/scripts/vul4py.py` | Creates the candidate, applies the patch and executes benchmark tests |
+| `benchmarks/vul4py.py` | Provides the benchmark adapter and candidate access |
+| `analyzers/semgrep.py` | Executes secondary static analysis |
+| `finish_results.py` | Completes records for an already generated and evaluated case |
+| `result_writer.py` | Writes the case records and CSV |
+| `metrics.py` | Calculates VRR and FAR |
+| `models.py` | Defines shared data structures |
+| `benchmarks/base.py` and `analyzers/base.py` | Define interfaces for replaceable components |
+
+## Measurements and output files
+
+API latency is measured with `time.perf_counter()` immediately around the API call:
+
+```text
+latency_ms = (response_time - request_time) × 1000
+```
+
+It includes network operations, server waiting, model generation and response reception.
+
+It excludes local source collection, Vul4Py evaluation and Semgrep analysis. It is not simply network round-trip time.
+
+Token counts come from the API's usage information.
+
+The CSV contains:
+
+```text
+case_id
+model
+timestamp
+llm_claimed_success
+llm_confidence
+patch_applied
+security_test_pass
+functional_test_pass
+verified_repair
+false_assurance
+latency_ms
+input_tokens
+output_tokens
+semgrep_findings_before
+semgrep_findings_after
+api_success
+error_type
+```
+
+Main outputs:
+
+| Location | Content |
+|---|---|
+| `results/results.csv` | Experimental records in tabular form |
+| `results/metrics.json` | Aggregate metrics |
+| `results/records/<CVE>.json` | Individual case record |
+| `results/scan_report.tsv` | Saved baseline validation |
+| `results/evidence/<CVE>/` | Generation, patch, evaluation and analysis evidence |
+
+Missing values are not replaced with invented measurements. Infrastructure errors remain distinguishable from actual repair failures.
+
+## Verified repair and false assurance
+
+A repair is verified only when the patch applies and passes both independent tests:
+
+```text
+V = A × F × S
+```
+
+False assurance occurs when the model claims success but the repair is not independently verified:
+
+```text
+FA = C × (1 - V)
+```
+
+Here, `C` is the model's binary success claim.
+
+Verified Repair Rate:
+
+```text
+VRR = verified repairs / recorded attempts × 100
+```
+
+False Assurance Rate:
+
+```text
+FAR = false success claims / total success claims × 100
+```
+
+If there are no positive success claims, FAR is undefined because its denominator is zero.
+
+The implementation calculates aggregates from recorded cases. API and infrastructure errors must be reported alongside the counts because they do not directly measure the model's repair capability.
+
+## Network communication
+
+When the client calls the API:
+
+1. **DNS** resolves `api.openai.com` to an IP address.
+2. **TCP** establishes a reliable, ordered connection, normally to port 443. The client sends SYN, the server responds SYN-ACK, and the client sends the final ACK.
+3. **TLS** authenticates the server and provides encryption and integrity protection.
+4. **HTTPS** carries the JSON request and response.
+
+Connection setup may be reused between requests.
+
+TLS protects the API key, source code and instructions in transit. Wireshark normally shows connection information such as addresses and ports but cannot read the encrypted payload.
+
+SSH, normally on port 22, is the separate connection used by VS Code to edit the EC2 project.
+
+### HTTP and connection errors
+
+| Error | Meaning |
+|---|---|
+| HTTP 400 | Invalid request |
+| HTTP 401 | Missing or invalid authentication credentials |
+| HTTP 403 | Access denied |
+| HTTP 404 | Resource or endpoint not found |
+| HTTP 429 | Rate limit or quota limit |
+| HTTP 5xx | Server or gateway problem |
+| Timeout | A network operation exceeded its configured waiting time |
+| DNS failure | The hostname could not be resolved; no HTTP response is received |
+
+Receiving an HTTP error means an HTTP response was received. It does not mean that TCP failed to connect.
+
+API latency can vary with network conditions, server load, input size and output generation length.
+
+## Execution decisions and limitations
+
+- The published measurements belong to the completed saved request. Adding or reorganizing client code does not create a new measurement.
+- During verification recovery, the patch applied and functional tests passed, but security testing initially could not start because the system `patch` utility was missing.
+- Installing that dependency and evaluating the same frozen patch completed verification. No new model request or manual patch modification was needed.
+- Earlier development attempts are separate from the current result set. This result is not evidence of a first-ever successful attempt on this CVE or an unbiased estimate of model performance.
+- Semgrep reported zero findings on both original and patched code. This alone does not demonstrate a security improvement.
+- Vul4Py's tests provide benchmark-specific verification, not proof that every possible vulnerability is absent.
+- Only one model repair is complete. Four selected cases still lack completed repair results.
+
+## GitHub and reproducibility
+
+The repository contains the implementation, configuration, case list, pinned benchmark revision and published evidence.
+
+Development is recorded through meaningful commits.
+
+Do not commit:
+
+- API keys.
+- Passwords.
+- `.env` files.
+- Virtual environments.
+- Local benchmark workspaces.
+
+Review code and evidence before publishing:
+
+```bash
+git add client.py README.md results/
+git commit -m "Document measured repair and verification"
+git push origin main
+```
+
+If the README is edited directly on GitHub, synchronize the local checkout before making further changes.
+
 <!-- CURRENT_RESULTS -->
-Current results
-Case	Claim	Confidence	Applied	Functional	Security	Verified	False assurance	Latency (ms)
-CVE-2021-32839	True	0.98	True	True	True	True	False	82980.3
 
+## Current results
 
-Recorded cases: 1
-VRR: 100.00%
-FAR: 0.00%
-Five cases are required by the written assignment. Current recorded cases: 1. Missing cases are not fabricated.
-API, parsing, infrastructure, and scan errors remain in the records. Percentages refer only to this recorded case set.
+| Case | Success claim | Confidence | Patch applied | Functional pass | Security pass | Verified repair | False assurance | API latency (ms) |
+|---|---|---|---|---|---|---|---|---|
+| CVE-2021-32839 | True | 0.98 | True | True | True | True | False | 82980.3 |
+
+| Measurement | Value |
+|---|---|
+| Model | gpt-6-luna |
+| UTC timestamp | 2026-10-12T03:06:14.672975+00:00 |
+| API latency | 82980.3 ms, approximately 82.98 seconds |
+| Input tokens | 57502 |
+| Output tokens | 847 |
+| Final evaluation duration | 25.0 seconds |
+| Semgrep findings on original code | 0 |
+| Semgrep findings on patched code | 0 |
+| Completed model-repair records | 1 |
+
+### Metrics
+
+```text
+VRR = 1 / 1 × 100 = 100%
+FAR = 0 / 1 × 100 = 0%
+```
+
+The model claimed success, and its patch applied and passed both functional and security tests.
+
+These percentages describe only the single published observation. They do not imply that the model always produces correct repairs.
+
+### Evidence links
+
+- [Complete case record](results/records/CVE-2021-32839.json)
+- [Generation measurements](results/evidence/CVE-2021-32839/generation.json)
+- [Model response](results/evidence/CVE-2021-32839/llm_response.json)
+- [Generated patch](results/evidence/CVE-2021-32839/patch.diff)
+- [Independent verification](results/evidence/CVE-2021-32839/eval.json)
+- [Verification log](results/evidence/CVE-2021-32839/eval.log)
+- [Results CSV](results/results.csv)
+- [Metrics](results/metrics.json)
+- [Validation of the five selected cases](results/scan_report.tsv)
+
+Five cases were selected, three passed baseline validation, and one model repair is complete. The remaining four repair results are pending or blocked by baseline issues.
