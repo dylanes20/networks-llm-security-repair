@@ -11,7 +11,7 @@ class Vul4PyAdapter:
     def __init__(self, root: Path):
         self.root = root.resolve()
         self.workspaces = self.root / "workspaces"
-        self.runs = self.root / "runs" / "student"
+        self.runs = Path("runs/student").resolve()
 
     def valid_cases(self) -> list[str]:
         report = self.workspaces / "scan_report.tsv"
@@ -61,7 +61,7 @@ class Vul4PyAdapter:
             if result.returncode != 0 or not eval_path.exists():
                 raise RuntimeError("Evaluator failed: check evaluator.log")
 
-        candidate = self.workspaces / case_id / "student_analysis_candidate"
+        candidate = self.workspaces / case_id / "student_candidate"
         return self.evaluate(case_id, candidate)
 
     def evaluate(self, case_id: str, candidate_dir: Path) -> EvaluationResult:

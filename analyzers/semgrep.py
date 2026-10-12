@@ -14,7 +14,7 @@ class SemgrepAnalyzer:
             return None, None
 
         command = [
-            "semgrep", "--config=auto", "--json",
+            "semgrep", "--config=auto", "--json", "--jobs=1",
             "--metrics=auto",
             "--exclude=.venv",
             "--exclude=venv",

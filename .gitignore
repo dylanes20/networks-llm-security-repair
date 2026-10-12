@@ -9,3 +9,5 @@ results/raw/
 client.py
 client_run.log
 client_run_corrected.log
+
+vul4py/
