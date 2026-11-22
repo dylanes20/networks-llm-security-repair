@@ -1,10 +1,12 @@
 import csv
 import json
+import os
 
 from config import RESULTS_DIR
 
 
 FIELDS = [
+    "student_id",
     "case_id",
     "model",
     "timestamp",
@@ -33,6 +35,8 @@ def save_result_row(row):
         field: row.get(field, None)
         for field in FIELDS
     }
+
+    normalized["student_id"] = row.get("student_id") or os.environ.get("STUDENT_ID")
 
     record_path = records / f"{row['case_id']}.json"
     if record_path.exists():

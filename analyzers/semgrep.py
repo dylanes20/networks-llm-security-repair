@@ -1,6 +1,9 @@
 import hashlib
+import os
 import json
 import subprocess
+import sys
+from pathlib import Path
 
 from config import RESULTS_DIR
 from models import AnalyzerResult
@@ -13,6 +16,12 @@ class SemgrepAnalyzer:
         if target is None:
             return None, None
 
+        env = os.environ.copy()
+        env["PATH"] = (
+            str(Path(sys.prefix) / "bin")
+            + os.pathsep
+            + env.get("PATH", "")
+        )
         command = [
             "semgrep", "--config=auto", "--json", "--jobs=1",
             "--metrics=auto",
@@ -26,7 +35,7 @@ class SemgrepAnalyzer:
         try:
             result = subprocess.run(
                 command, capture_output=True,
-                text=True, timeout=180,
+                text=True, timeout=180, env=env,
             )
             (output_dir / f"semgrep_{label}.json").write_text(
                 result.stdout, encoding="utf-8"
