@@ -6,7 +6,6 @@ vul4py/workspaces/
 runs/
 results/raw/
 
-client.py
 client_run.log
 client_run_corrected.log
 

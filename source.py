@@ -6,13 +6,14 @@ def serialize_project(project_dir):
         "__pycache__",
         "backported_tests",
         "backported_support",
+        "fixed",
     }
 
     parts = []
     for path in sorted(project_dir.rglob("*.py")):
         relative = path.relative_to(project_dir)
 
-        if any(part in excluded for part in relative.parts):
+        if path.is_symlink() or any(part in excluded for part in relative.parts):
             continue
 
         parts.append(

@@ -68,6 +68,7 @@ class SemgrepAnalyzer:
         values = {
             "semgrep_findings_before": before,
             "semgrep_findings_after": after,
+            "evidence_dir": output_dir,
         }
         errors = [
             error for error in (before_error, after_error)

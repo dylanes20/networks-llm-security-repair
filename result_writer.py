@@ -35,8 +35,12 @@ def save_result_row(row):
     }
 
     record_path = records / f"{row['case_id']}.json"
-    with record_path.open("x", encoding="utf-8") as f:
-        json.dump(normalized, f, indent=2, ensure_ascii=False)
+    if record_path.exists():
+        if json.loads(record_path.read_text(encoding="utf-8")) != normalized:
+            raise ValueError("The existing experimental record cannot be changed")
+    else:
+        with record_path.open("x", encoding="utf-8") as f:
+            json.dump(normalized, f, indent=2, ensure_ascii=False)
 
     rows = [
         json.loads(path.read_text(encoding="utf-8"))
