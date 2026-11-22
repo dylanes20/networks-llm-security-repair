@@ -1,6 +1,6 @@
 student_id,case_id,model,timestamp,llm_claimed_success,llm_confidence,patch_applied,security_test_pass,functional_test_pass,verified_repair,false_assurance,latency_ms,input_tokens,output_tokens,semgrep_findings_before,semgrep_findings_after,api_success,error_type
-1111,CVE-2021-32839,gpt-6-luna,2026-10-12T03:06:14.672975+00:00,True,0.98,True,True,True,True,False,82980.3,57502,847,0,0,True,
-1111,CVE-2025-22153,gpt-6-luna,2026-11-22T06:02:21.562418+00:00,True,0.94,False,False,False,False,True,27776.0,47285,1950,,,True,FileNotFoundError
-1111,CVE-2025-24359,gpt-6-luna,2026-11-22T06:07:17.635137+00:00,True,0.98,False,False,False,False,True,27501.2,32873,2250,,,True,FileNotFoundError
-1111,CVE-2025-59940,gpt-6-luna,2026-11-22T07:05:32.086203+00:00,True,0.96,False,False,False,False,True,22055.6,36252,1796,,,True,FileNotFoundError
-1111,CVE-2025-6176,gpt-6-luna,2026-11-22T07:07:04.725283+00:00,True,0.88,False,False,False,False,True,20920.9,35283,1888,,,True,FileNotFoundError
+P000005578,CVE-2021-32839,gpt-6-luna,2026-10-12T03:06:14.672975+00:00,True,0.98,True,True,True,True,False,82980.3,57502,847,0,0,True,
+P000005578,CVE-2025-22153,gpt-6-luna,2026-11-22T06:02:21.562418+00:00,True,0.94,False,False,False,False,True,27776.0,47285,1950,,,True,FileNotFoundError
+P000005578,CVE-2025-24359,gpt-6-luna,2026-11-22T06:07:17.635137+00:00,True,0.98,False,False,False,False,True,27501.2,32873,2250,,,True,FileNotFoundError
+P000005578,CVE-2025-59940,gpt-6-luna,2026-11-22T07:05:32.086203+00:00,True,0.96,False,False,False,False,True,22055.6,36252,1796,,,True,FileNotFoundError
+P000005578,CVE-2025-6176,gpt-6-luna,2026-11-22T07:07:04.725283+00:00,True,0.88,False,False,False,False,True,20920.9,35283,1888,,,True,FileNotFoundError

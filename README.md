@@ -17,6 +17,8 @@ Baseline validation and model-patch verification are different:
 
 Four claimed repairs were not independently verified. Their outcomes are reported without inventing test results.
 
+**Experimental limitation (CVE-2025-6176, Brotli):** The vulnerability's upstream fix affects C source code (`python/_brotli.c`), while our source extractor sends only Python (`.py`) files to the LLM. This limits the interpretation of this case. The original model response and verification results remain unchanged.
+
 ## Validation and analysis of the five selected cases
 | CVE | Project | Baseline status | Baseline analysis | Current LLM repair status |
 |---|---|---|---|---|
