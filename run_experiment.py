@@ -1,4 +1,6 @@
 """Run one generation per eligible case, then verify the frozen response."""
+from __future__ import annotations
+
 import argparse
 import csv
 import hashlib
