@@ -1,8 +1,8 @@
 {
-  "total_cases": 1,
+  "total_cases": 5,
   "verified_repairs": 1,
-  "positive_claims": 1,
-  "false_assurances": 0,
-  "VRR": 1.0,
-  "FAR": 0.0
+  "positive_claims": 5,
+  "false_assurances": 4,
+  "VRR": 0.2,
+  "FAR": 0.8
 }

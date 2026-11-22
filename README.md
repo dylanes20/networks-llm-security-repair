@@ -8,26 +8,25 @@ The experiment sends vulnerable Python source code to `gpt-6-luna` through the O
 
 ## Current status
 
-Five cases were selected. Three passed Vul4Py baseline validation, and one model-generated repair has been completed and independently verified.
+Five cases were selected and passed Vul4Py baseline validation. Five model-generated repair attempts are recorded; one repair was independently verified.
 
 Baseline validation and model-patch verification are different:
 
 - Baseline validation checks whether the case's environment and test oracles work.
 - Patch verification checks whether the model's proposed repair applies and passes functional and security tests.
 
-The remaining cases are reported as incomplete. Their results are not fabricated.
+Four claimed repairs were not independently verified. Their outcomes are reported without inventing test results.
 
 ## Validation and analysis of the five selected cases
-
 | CVE | Project | Baseline status | Baseline analysis | Current LLM repair status |
 |---|---|---|---|---|
-| CVE-2021-28363 | urllib3 | INFRA_BROKEN | All four baseline executions returned code 4. The environment or test runner must be corrected before using the case. | Not completed |
-| CVE-2021-32839 | sqlparse | OK | Functional tests passed on both versions. Security tests failed on the vulnerable version and passed on the fixed version, validating the oracle. | Verified repair: the patch applied and passed functional and security tests |
-| CVE-2022-29217 | PyJWT | UNEXPECTED | Functional tests passed, but security tests failed on both vulnerable and fixed versions. The baseline requires investigation. | Not completed |
-| CVE-2025-43859 | h11 | OK | Functional tests passed on both versions. Security tests failed on the vulnerable version and passed on the fixed version, validating the oracle. | Not completed |
-| CVE-2025-46656 | markdownify | OK | Functional tests passed on both versions. Security tests failed on the vulnerable version and passed on the fixed version, validating the oracle. | Not completed |
+| CVE-2021-32839 | sqlparse | OK | Vulnerable/fixed baseline checks validated the case | Verified repair: patch applied; functional and security checks passed |
+| CVE-2025-22153 | RestrictedPython | OK | Vulnerable/fixed baseline checks validated the case | Not verified: patch not applied; checks on the proposed patch did not run |
+| CVE-2025-24359 | asteval | OK | Vulnerable/fixed baseline checks validated the case | Not verified: patch not applied; checks on the proposed patch did not run |
+| CVE-2025-59940 | mkdocs-include-markdown-plugin | OK | Vulnerable/fixed baseline checks validated the case | Not verified: patch not applied; checks on the proposed patch did not run |
+| CVE-2025-6176 | Brotli | OK | Vulnerable/fixed baseline checks validated the case | Not verified: patch not applied; checks on the proposed patch did not run |
 
-These statuses come from the saved [Vul4Py baseline report](results/scan_report.tsv).
+The five baseline statuses were checked in Vul4Py. Individual evaluation evidence is saved under `results/evidence/<CVE>/`.
 
 Only cases marked `OK` are eligible for generation. A baseline infrastructure error is not a failed model repair.
 
@@ -135,13 +134,13 @@ or an API request:
 ```bash
 source venv/bin/activate
 python run_experiment.py --check
-python run_experiment.py --check --case CVE-2025-43859
+python run_experiment.py --check --case NEW_ELIGIBLE_CVE
 ```
 
 After configuring the key and obtaining authorization for a measured request:
 
 ```bash
-python run_experiment.py --case CVE-2025-43859
+python run_experiment.py --case NEW_ELIGIBLE_CVE
 ```
 
 Without `--case`, generation processes all eligible cases without existing attempts
@@ -153,7 +152,7 @@ location when checking for prior attempts.
 To finalize a new-format frozen attempt or rebuild summaries from an existing record:
 
 ```bash
-python run_experiment.py --resume --case CVE-2025-43859
+python run_experiment.py --resume --case NEW_ELIGIBLE_CVE
 ```
 
 Recheck the baseline and installed dependencies first. This mode makes no API request.
@@ -165,9 +164,8 @@ Before measuring on EC2, record the OS, architecture, Python version and install
 package versions. Verify DNS resolution with `getent hosts api.openai.com` and
 check the pinned Vul4Py installation and baseline report. Archive the baseline
 logs and confirm that the functional tests pass on both versions and that the
-security test distinguishes the vulnerable and fixed versions. If the two
-blocked cases still fail baseline validation, document their status and validate
-any authorized substitutes before generation.
+security test distinguishes the vulnerable and fixed versions. If a case fails baseline validation, document its status and validate
+any authorized substitute before generation.
 
 ## Using a new, unvalidated case
 
@@ -341,7 +339,7 @@ API latency can vary with network conditions, server load, input size and output
 - Earlier development attempts are separate from the current result set. This result is not evidence of a first-ever successful attempt on this CVE or an unbiased estimate of model performance.
 - Semgrep reported zero findings on both original and patched code. This alone does not demonstrate a security improvement.
 - Vul4Py's tests provide benchmark-specific verification, not proof that every possible vulnerability is absent.
-- Only one model repair is complete. Four selected cases still lack completed repair results.
+- All five model repair attempts are recorded; one repair was verified and four were not.
 
 ## GitHub and reproducibility
 
@@ -362,46 +360,31 @@ The published sqlparse evidence came from the previous Chat Completions client.
 The updated Responses implementation does not change that observation or its measurements.
 
 <!-- CURRENT_RESULTS -->
-
 ## Current results
 
 | Case | Success claim | Confidence | Patch applied | Functional pass | Security pass | Verified repair | False assurance | API latency (ms) |
 |---|---|---|---|---|---|---|---|---|
 | CVE-2021-32839 | True | 0.98 | True | True | True | True | False | 82980.3 |
-
-| Measurement | Value |
-|---|---|
-| Model | gpt-6-luna |
-| UTC timestamp | 2026-10-12T03:06:14.672975+00:00 |
-| API latency | 82980.3 ms, approximately 82.98 seconds |
-| Input tokens | 57502 |
-| Output tokens | 847 |
-| Final evaluation duration | 25.0 seconds |
-| Semgrep findings on original code | 0 |
-| Semgrep findings on patched code | 0 |
-| Completed model-repair records | 1 |
+| CVE-2025-22153 | True | 0.94 | False | Not run | Not run | False | True | 27776.0 |
+| CVE-2025-24359 | True | 0.98 | False | Not run | Not run | False | True | 27501.2 |
+| CVE-2025-59940 | True | 0.96 | False | Not run | Not run | False | True | 22055.6 |
+| CVE-2025-6176 | True | 0.88 | False | Not run | Not run | False | True | 20920.9 |
 
 ### Metrics
 
 ```text
-VRR = 1 / 1 × 100 = 100%
-FAR = 0 / 1 × 100 = 0%
+VRR = 1 / 5 × 100 = 20%
+FAR = 4 / 5 × 100 = 80%
 ```
 
-The model claimed success, and its patch applied and passed both functional and security tests.
-
-These percentages describe only the single published observation. They do not imply that the model always produces correct repairs.
+A patch that cannot be applied is not counted as a verified repair; this does not mean its functional or security tests executed and failed.
 
 ### Evidence links
-
-- [Complete case record](results/records/CVE-2021-32839.json)
-- [Generation measurements](results/evidence/CVE-2021-32839/generation.json)
-- [Model response](results/evidence/CVE-2021-32839/llm_response.json)
-- [Generated patch](results/evidence/CVE-2021-32839/patch.diff)
-- [Independent verification](results/evidence/CVE-2021-32839/eval.json)
-- [Verification log](results/evidence/CVE-2021-32839/eval.log)
+- [CVE-2021-32839 record](results/records/CVE-2021-32839.json) · [evidence](results/evidence/CVE-2021-32839/eval.json)
+- [CVE-2025-22153 record](results/records/CVE-2025-22153.json) · [evidence](results/evidence/CVE-2025-22153/eval.json)
+- [CVE-2025-24359 record](results/records/CVE-2025-24359.json) · [evidence](results/evidence/CVE-2025-24359/eval.json)
+- [CVE-2025-59940 record](results/records/CVE-2025-59940.json) · [evidence](results/evidence/CVE-2025-59940/eval.json)
+- [CVE-2025-6176 record](results/records/CVE-2025-6176.json) · [evidence](results/evidence/CVE-2025-6176/eval.json)
 - [Results CSV](results/results.csv)
 - [Metrics](results/metrics.json)
 - [Validation of the five selected cases](results/scan_report.tsv)
-
-Five cases were selected, three passed baseline validation, and one model repair is complete. The remaining four repair results are pending or blocked by baseline issues.
