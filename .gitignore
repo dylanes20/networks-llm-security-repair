@@ -10,5 +10,3 @@ client_run.log
 client_run_corrected.log
 
 vul4py/
-runs/demo_*/
-results/demo/
